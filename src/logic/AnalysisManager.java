@@ -1,14 +1,12 @@
 package logic;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Created by leonard on 22.01.17.
- */
 public class AnalysisManager {
-	private AnalysisWorker analysisWorker;
+	private Map<File, AnalysisWorker> analysisJobs;
 
 	private static AnalysisManager ourInstance = new AnalysisManager();
 
@@ -17,32 +15,40 @@ public class AnalysisManager {
 	}
 
 	private AnalysisManager() {
+		analysisJobs = new HashMap<>();
 	}
 
 	/**
-	 * @param directory
-	 * @return
-	 * @throws Exception if there is currently an analysis ongoing
+	 * @param directory directory that shall be analyized
+	 * @return false if a AnalysisManager for this directory is still running. Abort it to start a new Task for this directory.
+	 * @throws IllegalArgumentException if the directory is invalid
 	 */
-	public boolean analyzeDir(final File directory) throws Exception {
-		if (isAnalyzing()) {
-			throw new Exception("AnalysisManager: Can not start new analysis. AnalysisManager is still running. Abort it to start a new Task.");
+	public boolean analyzeDir(final File directory) throws IllegalArgumentException {
+		validateDirectory(directory);
+		if (analysisJobs.containsKey(directory)) {
+			return false;
 		}
-		analysisWorker = new AnalysisWorker(directory);
+		AnalysisWorker analysisWorker = new AnalysisWorker(directory);
 		analysisWorker.setThread(new Thread(analysisWorker));
 		analysisWorker.getThread().start();
-		return isAnalyzing();
+		analysisJobs.put(directory, analysisWorker);
+		return isAnalyzing(directory);
 	}
 
-	public boolean isAnalyzing() {
-		return analysisWorker != null && (analysisWorker.isAnalyzing());
+	public boolean isAnalyzing(final File directory) throws IllegalArgumentException {
+		validateDirectory(directory);
+		AnalysisWorker worker = analysisJobs.get(directory);
+		return worker != null && (worker.isAnalyzing());
 	}
 
-	public void abortAnalyzing() {
-		if (isAnalyzing()) {
+	public void abortAnalyzing(final File directory) throws IllegalArgumentException {
+		validateDirectory(directory);
+		AnalysisWorker analysisWorker = null;
+		if (isAnalyzing(directory)) {
+			analysisWorker = analysisJobs.get(directory);
 			analysisWorker.abort();
 		}
-		while(analysisWorker.isAnalyzing()){
+		while (analysisWorker.isAnalyzing()) {
 			System.out.println("Aborting Analysis");
 			try {
 				Thread.sleep(10L);
@@ -51,22 +57,42 @@ public class AnalysisManager {
 		}
 	}
 
-	public void pauseAnalysis() {
-		if (isAnalyzing()) {
+	public void pauseAnalysis(final File directory) throws IllegalArgumentException {
+		validateDirectory(directory);
+		if (isAnalyzing(directory)) {
+			AnalysisWorker analysisWorker = analysisJobs.get(directory);
 			analysisWorker.pause();
 		}
 	}
 
-	public boolean continueAnalysis() {
+	public boolean continueAnalysis(final File directory) throws IllegalArgumentException {
+		validateDirectory(directory);
+		AnalysisWorker analysisWorker = analysisJobs.get(directory);
 		return analysisWorker != null && analysisWorker.isAnalyzing() && analysisWorker.continueAnalysis();
 	}
 
-	public List<File> getFiles() {
-		return analysisWorker != null ? analysisWorker.getFiles() : new ArrayList<>();
+	public List<File> getFiles(final File directory) throws IllegalArgumentException {
+		validateDirectory(directory);
+		AnalysisWorker analysisWorker = analysisJobs.get(directory);
+		List<File> files = null;
+		if (analysisWorker != null) {
+			files = analysisWorker.getFiles();
+		} else {
+			System.err.println("No worker exists for \"" + directory.getAbsolutePath() + "\"");
+		}
+		return files;
 	}
 
-	public boolean hasFinished(){
+	public boolean hasFinished(final File directory) throws IllegalArgumentException {
+		validateDirectory(directory);
+		AnalysisWorker analysisWorker = analysisJobs.get(directory);
 		return analysisWorker != null ? analysisWorker.hasAnalysisSucceeded() : false;
+	}
+
+	private void validateDirectory(final File directory) throws IllegalArgumentException {
+		if (directory == null || !directory.exists() || !directory.isDirectory() || !directory.canRead()) {
+			throw new IllegalArgumentException("directory is not valid (null/non-existent/not a directory/no read access)");
+		}
 	}
 
 
