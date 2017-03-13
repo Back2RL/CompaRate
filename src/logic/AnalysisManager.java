@@ -43,17 +43,18 @@ public class AnalysisManager {
 
 	public void abortAnalyzing(final File directory) throws IllegalArgumentException {
 		validateDirectory(directory);
-		AnalysisWorker analysisWorker = null;
-		if (isAnalyzing(directory)) {
-			analysisWorker = analysisJobs.get(directory);
+		AnalysisWorker analysisWorker = analysisJobs.get(directory);
+		if(analysisWorker != null) {
 			analysisWorker.abort();
-		}
-		while (analysisWorker.isAnalyzing()) {
-			System.out.println("Aborting Analysis");
-			try {
-				Thread.sleep(10L);
-			} catch (InterruptedException e) {
+			while (analysisWorker.isAnalyzing()) {
+				System.out.println("Aborting Analysis");
+				try {
+					Thread.sleep(10L);
+				} catch (InterruptedException e) {
+					System.err.println("A worker is still pending abort!");
+				}
 			}
+			analysisJobs.remove(directory);
 		}
 	}
 

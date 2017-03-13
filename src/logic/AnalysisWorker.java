@@ -17,10 +17,26 @@ public class AnalysisWorker implements Runnable {
 	}
 
 	final List<File> files;
-	volatile boolean abortRequested = false;
-	volatile boolean pauseRequested = false;
-	volatile boolean stopRequested = false;
-	volatile boolean analysisSucceeded = false;
+	private volatile boolean abortRequested = false;
+	private volatile boolean pauseRequested = false;
+	private volatile boolean stopRequested = false;
+	private volatile boolean analysisSucceeded = false;
+	private volatile boolean isPaused = false;
+
+	private long startTime;
+	private long endTime = 0;
+	private long pauseStartTime;
+	private long pausedTime = 0;
+
+	public float getAnalysisTime(){
+		if(isPaused){
+			return (pauseStartTime - startTime - pausedTime) * 1E-3f;
+		}
+		if(endTime == 0L){
+			return (System.currentTimeMillis() - startTime - pausedTime) * 1E-3f;
+		}
+		return (endTime - startTime - pausedTime) * 1E-3f;
+	}
 
 	public boolean hasAnalysisSucceeded() {
 		return analysisSucceeded;
@@ -29,6 +45,7 @@ public class AnalysisWorker implements Runnable {
 	private volatile Thread thread;
 
 	public AnalysisWorker(final File startDirectory) {
+		startTime = System.currentTimeMillis();
 		directories = new ArrayList<>();
 		directories.add(startDirectory);
 		files = new ArrayList<>();
@@ -114,14 +131,17 @@ public class AnalysisWorker implements Runnable {
 		if (!stopRequested) {
 			analysisSucceeded = true;
 		}
-		// System.out.println(files.toString());
+		endTime = System.currentTimeMillis();
 		System.out.println("-----");
 		System.out.println("Number of found files: " + files.size());
+		System.out.println("Runtime = "+getAnalysisTime()+" seconds.");
 
 	}
 
 	private void checkPause() {
 		if (pauseRequested) {
+			isPaused = true;
+			pauseStartTime = System.currentTimeMillis();
 			while (pauseRequested && !(abortRequested || stopRequested)) {
 				try {
 					System.out.println("AnalysisWorker: pausing...");
@@ -129,7 +149,9 @@ public class AnalysisWorker implements Runnable {
 				} catch (InterruptedException e) {
 				}
 			}
-			System.out.println("AnalysisWorker: continuing...");
+			isPaused = false;
+			pausedTime += System.currentTimeMillis() - pauseStartTime;
+			System.out.println("AnalysisWorker: continuing after " + pausedTime * 1E-3f + " seconds...");
 		}
 	}
 
@@ -144,7 +166,9 @@ public class AnalysisWorker implements Runnable {
 	public synchronized boolean continueAnalysis() {
 		if (thread.isAlive() && pauseRequested) {
 			pauseRequested = false;
-			thread.interrupt();
+			if (isPaused) {
+				thread.interrupt();
+			}
 			return true;
 		}
 		return false;

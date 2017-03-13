@@ -46,17 +46,13 @@ public class Controller {
 			}
 
 		AnalysisManager.getInstance().pauseAnalysis(directory);
-		System.out.println(AnalysisManager.getInstance().continueAnalysis(directory));
 		try {
-			Controller.getInstance().startAnalyzingDirectory(new File("/home"));
-		} catch (Exception e) {
-			AnalysisManager.getInstance().abortAnalyzing(directory);
-			try {
-				Controller.getInstance().startAnalyzingDirectory(new File("/home"));
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
+			Thread.sleep(10000L);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+		AnalysisManager.getInstance().continueAnalysis(directory);
+
 		while (AnalysisManager.getInstance().isAnalyzing(directory)) {
 			try {
 				Thread.sleep(500);
