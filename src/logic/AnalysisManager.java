@@ -44,7 +44,7 @@ public class AnalysisManager {
 	public void abortAnalyzing(final File directory) throws IllegalArgumentException {
 		checkErrors(directory);
 		AnalysisWorker analysisWorker = analysisJobs.get(directory);
-		if(analysisWorker != null) {
+		if (analysisWorker != null) {
 			analysisWorker.abort();
 			while (analysisWorker.isAnalyzing()) {
 				System.out.println("Aborting Analysis");
@@ -94,5 +94,17 @@ public class AnalysisManager {
 		if (directory == null || !directory.exists() || !directory.isDirectory() || !directory.canRead()) {
 			throw new IllegalArgumentException("directory is not valid (null/non-existent/not a directory/no read access)");
 		}
+	}
+
+
+	synchronized public void workerFinishedSuccessfully(final File directory) {
+		AnalysisWorker worker = analysisJobs.get(directory);
+		if (worker == null || !worker.hasAnalysisSucceeded()) {
+			throw new IllegalArgumentException("There is no worker in existance for the given File \""
+					+ directory.getAbsolutePath() + "\" or it has not yet finished analyzing!");
+		}
+		System.out.println("-----");
+		System.out.println("Number of found files: " + worker.getFiles().size());
+		System.out.println("Runtime = " + worker.getAnalysisTime() + " seconds.");
 	}
 }

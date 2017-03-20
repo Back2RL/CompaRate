@@ -6,7 +6,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.*;
 
-public class IndexManager {
+public class IndexManager{
 	private static final String indexSeperator = ";";
 	private final boolean DEBUG = true;
 	private boolean bUseMaxFileSize;
@@ -37,11 +37,9 @@ public class IndexManager {
 
 	/**
 	 * @param pathToIndexDirectory
-	 * @param maxFileSize
-	 *            in Bytes 100 * 1024 => 100KB
-	 * @throws IllegalArgumentException
-	 *             given path has to point to a directory and must not be
-	 *             empty/null
+	 * @param maxFileSize          in Bytes 100 * 1024 => 100KB
+	 * @throws IllegalArgumentException given path has to point to a directory and must not be
+	 *                                  empty/null
 	 */
 	IndexManager(String pathToIndexDirectory, long maxFileSize) {
 		this.bUseMaxFileSize = true;
@@ -50,9 +48,9 @@ public class IndexManager {
 		indexDirectoryPath = getDirectory(pathToIndexDirectory).getAbsolutePath() + File.separatorChar;
 	}
 
-	IndexManager( long maxFileSize) {
+	IndexManager(long maxFileSize) {
 		String pathToIndexDirectory = System.getProperty("user.home");
-		if(!(new File(pathToIndexDirectory).exists() && new File(pathToIndexDirectory).isDirectory())){
+		if (!(new File(pathToIndexDirectory).exists() && new File(pathToIndexDirectory).isDirectory())) {
 			File dir = new File(pathToIndexDirectory);
 			//dir.createNewFile();
 		}
@@ -64,9 +62,8 @@ public class IndexManager {
 
 	/**
 	 * @param pathToIndexDirectory
-	 * @throws IllegalArgumentException
-	 *             given path has to point to a directory and must not be
-	 *             empty/null
+	 * @throws IllegalArgumentException given path has to point to a directory and must not be
+	 *                                  empty/null
 	 */
 	IndexManager(String pathToIndexDirectory) {
 		this.bUseMaxFileSize = false;
@@ -94,7 +91,7 @@ public class IndexManager {
 
 	/**
 	 * attempts to load the index file
-	 * 
+	 *
 	 * @return true when a file exists
 	 */
 	boolean loadIndex() {

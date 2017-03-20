@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AnalysisWorker implements Runnable {
+	private final File startDirectory;
 	final List<File> directories;
 
 	public List<File> getFiles() {
@@ -42,6 +43,7 @@ public class AnalysisWorker implements Runnable {
 	private volatile Thread thread;
 
 	public AnalysisWorker(final File startDirectory) {
+		this.startDirectory = startDirectory;
 		startTime = System.currentTimeMillis();
 		directories = new ArrayList<>();
 		directories.add(startDirectory);
@@ -125,14 +127,11 @@ public class AnalysisWorker implements Runnable {
 				return;
 			}
 		}
+		endTime = System.currentTimeMillis();
 		if (!stopRequested) {
 			analysisSucceeded = true;
+			AnalysisManager.getInstance().workerFinishedSuccessfully(startDirectory);
 		}
-		endTime = System.currentTimeMillis();
-		System.out.println("-----");
-		System.out.println("Number of found files: " + files.size());
-		System.out.println("Runtime = "+getAnalysisTime()+" seconds.");
-
 	}
 
 	private void checkPause() {

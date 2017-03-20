@@ -4,9 +4,10 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+// class that contains functionality to get the current time as string
 public class Time {
 
-	// pattern: yearmonthdayhourminutesecondmillisecond
+	/** pattern: yearmonthdayhourminutesecondmillisecond */
 	public static final DateTimeFormatter UTC_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSS");
 
 	/**
@@ -17,7 +18,6 @@ public class Time {
 		// get the current utc-time
 		final ZonedDateTime utc = ZonedDateTime.now(ZoneOffset.UTC);
 		// format it into a string that can be used in filenames
-		final String timeString = "utc" + utc.format(UTC_FORMATTER);
-		return timeString;
+		return "utc" + utc.format(UTC_FORMATTER);
 	}
 }

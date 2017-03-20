@@ -32,7 +32,7 @@ public class Controller {
 	}
 
 	public static void testController() {
-		File directory = new File("/");
+		File directory = new File("/home");
 
 			if(Controller.getInstance().startAnalyzingDirectory(directory)){
 				System.out.println("started Analysis on " + directory.getAbsolutePath());
