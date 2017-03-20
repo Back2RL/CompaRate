@@ -62,10 +62,11 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		System.out.println(Time.get_UTC_now());
 		Scanner console = new Scanner(System.in);
-		do {
+		System.out.println("Start Analysis? (true/false):");
+		while (!console.hasNextBoolean()){
 			System.out.println("Start Analysis? (true/false):");
-		} while (!console.hasNextBoolean());
-		if (!console.nextBoolean()) {
+			console.next();
+		}if (!console.nextBoolean()) {
 			console.close();
 			System.exit(0);
 		}
