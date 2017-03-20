@@ -6,9 +6,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by leonard on 22.01.17.
- */
 public class AnalysisWorker implements Runnable {
 	final List<File> directories;
 
@@ -175,7 +172,7 @@ public class AnalysisWorker implements Runnable {
 	}
 
 	public synchronized boolean isAnalyzing() {
-		System.out.println(thread.getName() + " is asked whether it is analyzing...");
+		//System.out.println(thread.getName() + " is asked whether it is analyzing...");
 		return thread.isAlive();// && !thread.isInterrupted();
 	}
 

@@ -125,7 +125,7 @@ public class IndexManager {
 
 		try {
 			Files.copy(index.toPath(),
-					new File(indexDirectoryPath + fileName + "_" + Time.timeNowToString() + fileExt).toPath());
+					new File(indexDirectoryPath + fileName + "_" + Time.get_UTC_now() + fileExt).toPath());
 		} catch (FileAlreadyExistsException e) {
 			System.out.println("There is already a valid backup file");
 		} catch (IOException e) {

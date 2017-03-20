@@ -24,7 +24,7 @@ public class AnalysisManager {
 	 * @throws IllegalArgumentException if the directory is invalid
 	 */
 	public boolean analyzeDir(final File directory) throws IllegalArgumentException {
-		validateDirectory(directory);
+		checkErrors(directory);
 		if (analysisJobs.containsKey(directory)) {
 			return false;
 		}
@@ -36,13 +36,13 @@ public class AnalysisManager {
 	}
 
 	public boolean isAnalyzing(final File directory) throws IllegalArgumentException {
-		validateDirectory(directory);
+		checkErrors(directory);
 		AnalysisWorker worker = analysisJobs.get(directory);
 		return worker != null && (worker.isAnalyzing());
 	}
 
 	public void abortAnalyzing(final File directory) throws IllegalArgumentException {
-		validateDirectory(directory);
+		checkErrors(directory);
 		AnalysisWorker analysisWorker = analysisJobs.get(directory);
 		if(analysisWorker != null) {
 			analysisWorker.abort();
@@ -59,7 +59,7 @@ public class AnalysisManager {
 	}
 
 	public void pauseAnalysis(final File directory) throws IllegalArgumentException {
-		validateDirectory(directory);
+		checkErrors(directory);
 		if (isAnalyzing(directory)) {
 			AnalysisWorker analysisWorker = analysisJobs.get(directory);
 			analysisWorker.pause();
@@ -67,13 +67,13 @@ public class AnalysisManager {
 	}
 
 	public boolean continueAnalysis(final File directory) throws IllegalArgumentException {
-		validateDirectory(directory);
+		checkErrors(directory);
 		AnalysisWorker analysisWorker = analysisJobs.get(directory);
 		return analysisWorker != null && analysisWorker.isAnalyzing() && analysisWorker.continueAnalysis();
 	}
 
 	public List<File> getFiles(final File directory) throws IllegalArgumentException {
-		validateDirectory(directory);
+		checkErrors(directory);
 		AnalysisWorker analysisWorker = analysisJobs.get(directory);
 		List<File> files = null;
 		if (analysisWorker != null) {
@@ -85,16 +85,14 @@ public class AnalysisManager {
 	}
 
 	public boolean hasFinished(final File directory) throws IllegalArgumentException {
-		validateDirectory(directory);
+		checkErrors(directory);
 		AnalysisWorker analysisWorker = analysisJobs.get(directory);
 		return analysisWorker != null ? analysisWorker.hasAnalysisSucceeded() : false;
 	}
 
-	private void validateDirectory(final File directory) throws IllegalArgumentException {
+	private void checkErrors(final File directory) throws IllegalArgumentException {
 		if (directory == null || !directory.exists() || !directory.isDirectory() || !directory.canRead()) {
 			throw new IllegalArgumentException("directory is not valid (null/non-existent/not a directory/no read access)");
 		}
 	}
-
-
 }
