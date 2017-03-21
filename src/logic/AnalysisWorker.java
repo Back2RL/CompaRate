@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.List;
+import java.util.Stack;
 
 public class AnalysisWorker implements Runnable {
 	private final File startDirectory;
-	final List<File> directories;
+	final Stack<File> pendingDirectories;
 
 	public List<File> getFiles() {
 		return files;
@@ -45,8 +47,8 @@ public class AnalysisWorker implements Runnable {
 	public AnalysisWorker(final File startDirectory) {
 		this.startDirectory = startDirectory;
 		startTime = System.currentTimeMillis();
-		directories = new ArrayList<>();
-		directories.add(startDirectory);
+		pendingDirectories = new Stack<>();
+		pendingDirectories.push(startDirectory);
 		files = new ArrayList<>();
 	}
 
@@ -60,7 +62,10 @@ public class AnalysisWorker implements Runnable {
 
 	@Override
 	public void run() {
-		File analysisDir = directories.get(0);
+		File analysisDir = null;
+		try {
+			analysisDir = pendingDirectories.pop();
+		}catch (EmptyStackException e){}
 		if (analysisDir == null) {
 			try {
 				throw new IOException("Analysis-directory is null!");
@@ -85,9 +90,6 @@ public class AnalysisWorker implements Runnable {
 			}
 			return;
 		}
-
-		List<File> pendingDirectories = new ArrayList<>();
-
 		while (!stopRequested) {
 			try {
 				for (File currentFile : analysisDir.listFiles()) {
@@ -99,7 +101,7 @@ public class AnalysisWorker implements Runnable {
 						continue;
 					}
 					if (currentFile.isDirectory()) {
-						pendingDirectories.add(currentFile);
+						pendingDirectories.push(currentFile);
 						continue;
 					}
 					if (currentFile.isFile()) {
@@ -113,8 +115,7 @@ public class AnalysisWorker implements Runnable {
 					System.err.println("Can not access: " + analysisDir.toString());
 			}
 			if (!pendingDirectories.isEmpty()) {
-				analysisDir = pendingDirectories.get(0);
-				pendingDirectories.remove(0);
+				analysisDir = pendingDirectories.pop();
 			} else {
 				break;
 			}
@@ -122,7 +123,7 @@ public class AnalysisWorker implements Runnable {
 			checkPause();
 			if (abortRequested) {
 				System.out.println("AnalysisWorker: aborting...");
-				directories.clear();
+				pendingDirectories.clear();
 				files.clear();
 				return;
 			}
